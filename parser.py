@@ -5,6 +5,9 @@ it, if you'd prefer to write your own parsing functions."""
 import re
 from sys import stdin
 
+# Local custom file to represent Finite Automata
+from fa import *
+
 class Parser:
     """Combined parser and reader, takes a stream as input, outputs automata/commands"""
 
@@ -29,31 +32,13 @@ class Parser:
         return lines
 
     def parse_fa(self):
-        """Read from the stream, return a dictionary representing the nfa/dfa.
-
-        key 'state' gives the set of states (as a list)
-        key 'alphabet' gives the set of symbols (as a list)
-        key 'start' gives the label of the start state
-        key 'final' gives the set of final states (as a list)
-        key 'delta' gives a list of (s, c, t) tuples
-
-        This is not a very efficient representation of a FA, you will want to
-        use this data to construct something more useful.
         """
+        Parses a FA, creating an FA object using the custom module
+        found in fa.py """
         lines = self.read_section()
         it = iter(lines)
-        automata = dict()
-        automata['states'] = next(it).split(',')
-        automata['alphabet'] = next(it).split(',')
-        automata['start'] = next(it)
-        automata['final'] = next(it).split(',')
-        # the remaining lines are transitions d(s,c)=t
-        automata['delta'] = list()
-        for line in it:
-            s, c, t = line.split(',')
-            # this is a poor choice of data structure to represent delta
-            # you should construct a more useful and efficient representation
-            automata['delta'].append((s, c, t))
+        automata = FA()
+        automata.gen_FA(it)
         return automata
 
     def parse_closures(self):

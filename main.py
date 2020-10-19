@@ -6,12 +6,17 @@ wish to."""
 from parser import Parser
 from sys import stdin
 
+# Local module containing Finite Automata classes
+from fa import *
+
 def task_1(parser):
     """For each state of the NFA, compute the Epsilon closure and output
     it as a line of the form s:a,b,c where s is the state, and {a,b,c} is E(s)"""
     nfa = parser.parse_fa()
-    # TODO: implement this
-    print('TODO: print some output')
+    
+    output = nfa.compute_closure()
+
+    print(output)
 
 def task_2(parser):
     """Construct and output an equivalent Epsilon free NFA.
