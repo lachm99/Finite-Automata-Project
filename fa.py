@@ -71,27 +71,24 @@ class FA:
             s_obj.new_transition(t_obj, c)
             continue;
 
-
-    def compute_closure(self):
-        # DFS on each state, to see which states it can reach.
-        output = ""
+    def compute_closures(self):
         for state in self.states:
-            output += (state.name + ":")
-            output = FA.dfs([], state, output)
-            output.rstrip(",")
-            output += "\n"
-        output += "end"
-        return output
+            FA.recurse_e_closure(state, [], state)
+        return
 
-    def dfs(visited, state, output):
+    def recurse_e_closure(origin, visited, state):
         if (state in visited):
-            return output
+            return
+        # If we encounter a state with already calculated e_clos,
+        # don't recalculate! just use it's calcs.
+        if (len(state.e_closure) > 0):
+            origin.e_closure.update(state.e_closure)
+            return
+        origin.e_closure.add(state)
         visited.append(state)
-        output += state.name + ","
         for delta in state.transitions:
             if (delta.string == ""):
-                output = FA.dfs(visited, delta.end, output)
-        return output
+                FA.recurse_e_closure(origin, visited, delta.end)
 
 class State:
     """ Automata State Object. Contains:
@@ -102,6 +99,7 @@ class State:
         self.name = name
         self.transitions = []
         self.final = False
+        self.e_closure = set({})
 
     def set_final(self):
         # Simply set this state to be final

@@ -13,9 +13,14 @@ def task_1(parser):
     """For each state of the NFA, compute the Epsilon closure and output
     it as a line of the form s:a,b,c where s is the state, and {a,b,c} is E(s)"""
     nfa = parser.parse_fa()
-    
-    output = nfa.compute_closure()
-
+    nfa.compute_closures()
+    output = ""
+    for state in nfa.states:
+        output += state.name + ":"
+        for x in state.e_closure:
+            output += x.name + ","
+        output = output.rstrip(",") + "\n"
+    output += "end"
     print(output)
 
 def task_2(parser):
