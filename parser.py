@@ -32,13 +32,24 @@ class Parser:
         return lines
 
     def parse_fa(self):
-        """
-        Parses a FA, creating an FA object using the custom module
-        found in fa.py """
         lines = self.read_section()
         it = iter(lines)
-        automata = FA()
-        automata.gen_FA(it)
+        automata = FA(it)
+        return automata
+
+    """
+    Parse FA's, creating an FA object using the custom module
+    found in fa.py """
+    def parse_nfa(self):
+        lines = self.read_section()
+        it = iter(lines)
+        automata = NFA(it)
+        return automata
+
+    def parse_dfa(self):
+        lines = self.read_section()
+        it = iter(lines)
+        automata = DFA(it)
         return automata
 
     def parse_closures(self):

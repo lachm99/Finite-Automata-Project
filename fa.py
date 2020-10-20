@@ -2,22 +2,23 @@
 
 
 
-class FA:
-    """ Finite Automata:
-        States,
+class FA(object):
+    """ Finite Automata contains:
+        States, A dictionary with:
+            Key: state names
+            Value: Tuple containing - State delta set, state epsilon closure
         Alphabet,
         Start state,
         Set of final states.
+    """
 
-        Deltas are stored by the state they transition FROM."""
-    def __init__(self):
-        self.states = []
-        self.alpha = []
+    def __init__(self, iterator = None):
+        self.states = dict()
+        self.alpha = set()
         self.start_state = None
-        self.final_states = []
-
-    def gen_FA(self, iterator):
-        # Given an iterator, (over input lines), generate the automata
+        self.final_states = set()
+        if (iterator == None):
+            return
         self.gen_states(next(iterator).split(','))
         self.gen_alpha(next(iterator).split(','))
         self.assign_start(next(iterator))
@@ -25,101 +26,172 @@ class FA:
         self.gen_deltas(iterator)
 
     def gen_states(self, names):
-        # Initialise empty states based on the provided names
-        for name in names:
-            self.states.append(State(name))
+        # Initialise states based on the provided names
+        self.states = dict.fromkeys(names)
+        for key in self.states:
+            # Each entry has a tuple of sets containing 
+            # transitions from this state, and e-closure of the state.
+            self.states[key] = (set(), set())
 
     def gen_alpha(self, alphas):
-        # Store input array of alphabets into instance var array
-        for alpha in alphas:
-            self.alpha.append(alpha)
+        self.alpha = set(alphas)
 
     def assign_start(self, start_name):
-        # Find the State object corresponding to the string name
-        for state in self.states:
-            if (state.name == start_name):
-                # Assign automata start state to the object.
-                self.start_state = state
+        self.start_state = start_name
 
     def assign_final(self, final_name_array):
-        # Given a list of final state names, make corresponding obj's final.
-        for state in self.states:
-            if state.name in final_name_array:
-                self.final_states.append(state)
-                state.set_final()
+        self.final_states.update(set(final_name_array))
 
     def gen_deltas(self, lines):
         # Create transitions from comma separated lines of information.
         for line in lines:
-            # init target State objects to null
-            s_obj = None;
-            t_obj = None;
-            # Parse start state name, transition str, terminate state name
+            # Interpret start state, transition symbol, termination state.
             s, c, t = line.split(',')
+            # Add to state s's transitions, the transition over c to t.
+            self.states[s][0].add(Transition(c,t))
 
-            # Find corresponding state objs and assign them
-            for state in self.states:
-                if (state.name == s):
-                    s_obj = state
-                if (state.name == t):
-                    t_obj = state
-                # Break if both are found
-                if (s_obj != None and t_obj != None):
-                    break;
 
-            # Assign a new transition to the starting state.
-            s_obj.new_transition(t_obj, c)
-            continue;
+    def deep_copy(self):
+        copy = FA()
+        copy.states = dict()
+        for state in self.states:
+            copy.states[state] = (self.states[state][0].copy(),
+                                  self.states[state][1].copy())
+        copy.final_states = self.final_states.copy()
+        copy.start_state = self.start_state
+        copy.alpha = self.alpha.copy()
+        return copy
+
+    def copy_without_deltas(self):
+        copy = FA()
+        copy.states = dict()
+        for state in self.states:
+            copy.states[state] = (set(),
+                                  self.states[state][1].copy())
+        copy.final_states = self.final_states.copy()
+        copy.start_state = self.start_state
+        copy.alpha = self.alpha.copy()
+        return copy
+
+    def print_fa(self):
+        output = [""]*5
+        for state in self.states:
+            output[0] += state + ","
+        output[0] = output[0].rstrip(",")
+        for a in self.alpha:
+            output[1] += a + ","
+        output[1] = output[1].rstrip(",")
+        output[2] += self.start_state
+        for state in sorted(self.final_states):
+            output[3] += state + ","
+        output[3] = output[3].rstrip(",")
+
+        for state in sorted(self.states):
+            deltas = self.states[state][0]
+            for delta in deltas:
+                output[4] += f"{state},{delta.string},{delta.end}\n"
+        output[4] += "end"
+
+        [print(line) for line in output]
+
+class NFA(FA):
+    def __init__(self, it):
+        super().__init__(it)
+
+
+    def assign_closures(self, closures):
+        for state in closures:
+            self.states[state][1].update(closures[state])
 
     def compute_closures(self):
         for state in self.states:
-            FA.recurse_e_closure(state, [], state)
+            self.recurse_e_closure(state, [], state)
         return
 
-    def recurse_e_closure(origin, visited, state):
+    def recurse_e_closure(self, origin, visited, state):
         if (state in visited):
             return
-        # If we encounter a state with already calculated e_clos,
-        # don't recalculate! just use it's calcs.
-        if (len(state.e_closure) > 0):
-            origin.e_closure.update(state.e_closure)
-            return
-        origin.e_closure.add(state)
         visited.append(state)
-        for delta in state.transitions:
+        # If we encounter a state with already calculated e_clos,
+        # don't recalculate! just union its result
+        if (len(self.states[state][1]) > 0):
+            self.states[origin][1].update(self.states[state][1])
+            return
+        self.states[origin][1].add(state)
+        for delta in self.states[state][0]:
             if (delta.string == ""):
-                FA.recurse_e_closure(origin, visited, delta.end)
+                self.recurse_e_closure(origin, visited, delta.end)
 
-class State:
-    """ Automata State Object. Contains:
-        String name,
-        List of Transitions FROM this state (deltas)
-        Boolean value storing if this is a final state. """
-    def __init__(self, name):
-        self.name = name
-        self.transitions = []
-        self.final = False
-        self.e_closure = set({})
+    def gen_efnfa(self):
+        efnfa = self.copy_without_deltas()
 
-    def set_final(self):
-        # Simply set this state to be final
-        self.final = True
+        # Modify original NFA to add direct epsilon transitions from
+        # every state to every state in its epsilon closure.
+        for state in self.states:
+            deltas = self.states[state][0]
+            closure = self.states[state][1]
+            for reached in closure:
+                t = Transition("", reached)
+                if (Transition.transition_unique(deltas, t)):
+                    deltas.add(t)
 
-    def new_transition(self, end, string):
-        # Create a new outgoing transition from this state.
-        self.transitions.append(Transition(end, string))
+        for v1 in  self.states:
+            deltas1 = self.states[v1][0]
+            for delta1 in deltas1:
+                if (delta1.string == ""):
+                    v2 = delta1.end
+                    deltas2 = self.states[v2][0]
+                    for delta2 in deltas2:
+                        if (delta2.string != ""):
+                            # Create new transition,
+                            # Add it to EFNFA!
+                            t = Transition(delta2.string, delta2.end)
+                            if (Transition.transition_unique(deltas1, t)):
+                                efnfa.states[v1][0].add(t)
+                    if (v2 in self.final_states):
+                        efnfa.final_states.add(v1)
+                else:
+                    efnfa.states[v1][0].add(t)
+        return efnfa
 
+    def print_closures(self):
+        output = ""
+        for state in self.states:
+            output += state + ":"
+            for val in sorted(nfa.states[state][1]):
+                output += val + ","
+            output = output.rstrip(",") + "\n"
+        output += "end"
+        print(output)
+
+
+
+class DFA(FA):
+    def __init__(self, it):
+        super().__init__(it)
+
+    def NFA_to_DFA(nfa):
+
+        return dfa
 
 
 class Transition:
     """ Automata Transition (delta) Object. Contains:
-        A State object the transition ends at,
+        End state name
         A transition string.
-
-        The start state of the transition is not stored since the 
-        start state is what stores this Transition object in every case. """
-    def __init__(self, end, string):
+    """
+    def __init__(self, string, end):
         self.end = end
         self.string = string
 
+    def equals(self, compare):
+        if (self.string == compare.string and self.end == compare.end):
+            return True
+        return False
+
+    def transition_unique(deltas, transition):
+        for delta in deltas:
+            if (transition.equals(delta)):
+                return False
+        return True
 
