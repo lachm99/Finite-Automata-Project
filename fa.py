@@ -138,7 +138,7 @@ class NFA(FA):
                 if (reached == state):
                     continue
                 t = Transition("", reached)
-                # if (Transition.transition_unique(deltas, t)):
+                if (Transition.transition_unique(deltas, t)):
                 deltas.add(t)
         for v1 in  self.states:
             deltas1 = self.states[v1][0]
