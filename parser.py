@@ -9,8 +9,11 @@ from sys import stdin
 from fa import *
 
 class Parser:
-    """Combined parser and reader, takes a stream as input, outputs automata/commands"""
-
+    """
+    Parser Class
+    ------------
+    Combined parser and reader, takes a stream as input, outputs automata/commands
+    """
     def __init__(self, stream=stdin):
         """Defaults to reading from sys.stdin"""
         self.stream = stream
@@ -31,15 +34,11 @@ class Parser:
             line = re.sub('\s', '', line)
         return lines
 
-    def parse_fa(self):
-        lines = self.read_section()
-        it = iter(lines)
-        automata = FA(it)
-        return automata
 
     """
     Parse FA's, creating an FA object using the custom module
-    found in fa.py """
+    found in fa.py.
+    """
     def parse_nfa(self):
         lines = self.read_section()
         it = iter(lines)
