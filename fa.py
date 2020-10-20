@@ -1,7 +1,5 @@
 """ A module containing finite automata related classes """
 
-
-
 class FA(object):
     """ Finite Automata contains:
         States, A dictionary with:
@@ -10,17 +8,21 @@ class FA(object):
         Alphabet,
         Start state,
         Set of final states.
-    """
 
+        Can be Initialised with or without an iterator - to construct from
+        user input, or to be manually constructed (eg. when copied)
+    """
     def __init__(self, iterator = None):
         self.states = dict()
         self.alpha = set()
         self.start_state = None
         self.final_states = set()
+        # If init'd without iterator, must be wanting a blank copy.
         if (iterator == None):
             return
+
         self.gen_states(next(iterator).split(','))
-        self.gen_alpha(next(iterator).split(','))
+        self.assign_alpha(next(iterator).split(','))
         self.assign_start(next(iterator))
         self.assign_final(next(iterator).split(','))
         self.gen_deltas(iterator)
@@ -33,7 +35,7 @@ class FA(object):
             # transitions from this state, and e-closure of the state.
             self.states[key] = (set(), set())
 
-    def gen_alpha(self, alphas):
+    def assign_alpha(self, alphas):
         self.alpha = set(alphas)
 
     def assign_start(self, start_name):
@@ -49,7 +51,6 @@ class FA(object):
             s, c, t = line.split(',')
             # Add to state s's transitions, the transition over c to t.
             self.states[s][0].add(Transition(c,t))
-
 
     def deep_copy(self):
         copy = FA()
@@ -95,9 +96,12 @@ class FA(object):
         [print(line) for line in output]
 
 class NFA(FA):
+    """ Subclass of FA.
+        Contains methods for calculating or assigning epsilon closures,
+        Generating an epsilon free NFA from itself,
+    """
     def __init__(self, it):
         super().__init__(it)
-
 
     def assign_closures(self, closures):
         for state in closures:
@@ -123,18 +127,19 @@ class NFA(FA):
                 self.recurse_e_closure(origin, visited, delta.end)
 
     def gen_efnfa(self):
+        # Start by duplicating the existing nfa
         efnfa = self.copy_without_deltas()
-
-        # Modify original NFA to add direct epsilon transitions from
-        # every state to every state in its epsilon closure.
         for state in self.states:
+        # Modify original NFA to add direct epsilon transitions from
+        # each state to all states in its epsilon closure.
             deltas = self.states[state][0]
             closure = self.states[state][1]
             for reached in closure:
+                if (reached == state):
+                    continue
                 t = Transition("", reached)
-                if (Transition.transition_unique(deltas, t)):
-                    deltas.add(t)
-
+                # if (Transition.transition_unique(deltas, t)):
+                deltas.add(t)
         for v1 in  self.states:
             deltas1 = self.states[v1][0]
             for delta1 in deltas1:
@@ -146,8 +151,8 @@ class NFA(FA):
                             # Create new transition,
                             # Add it to EFNFA!
                             t = Transition(delta2.string, delta2.end)
-                            if (Transition.transition_unique(deltas1, t)):
-                                efnfa.states[v1][0].add(t)
+                            # if (Transition.transition_unique(deltas1, t)):
+                            efnfa.states[v1][0].add(t)
                     if (v2 in self.final_states):
                         efnfa.final_states.add(v1)
                 else:
@@ -158,7 +163,7 @@ class NFA(FA):
         output = ""
         for state in self.states:
             output += state + ":"
-            for val in sorted(nfa.states[state][1]):
+            for val in sorted(self.states[state][1]):
                 output += val + ","
             output = output.rstrip(",") + "\n"
         output += "end"
@@ -171,6 +176,8 @@ class DFA(FA):
         super().__init__(it)
 
     def NFA_to_DFA(nfa):
+        # Given an EFNFA, construct a corresp. DFA
+        
 
         return dfa
 
