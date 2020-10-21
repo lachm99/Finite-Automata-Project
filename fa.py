@@ -18,7 +18,7 @@ class FA(object):
         self.states = []
         self.alpha = []
         self.start = None
-        self.final = []
+        self.final = set([])
         # If init'd without iterator, return skeleton FA
         if (iterator == None):
             return
@@ -41,8 +41,7 @@ class FA(object):
         self.states = [State(name) for name in next(itr).split(',')]
         self.alpha = next(itr).split(',')
         self.start = self.find_state(next(itr))
-        self.final = [self.find_state(name) for name in next(itr).split(',')]
-        [state.setFinal(True) for state in self.final]
+        self.final = set([self.find_state(name) for name in next(itr).split(',')])
         self.generate_deltas(itr)
 
     def generate_deltas(self, itr):
@@ -139,7 +138,7 @@ class NFA(FA):
         for origin in self.states:
             for state in list(origin.closure):
                 if (state.isFinal):
-                    origin.isFinal = True
+                    self.final.add(origin)
                 """
                 if (state == origin):
                     continue
