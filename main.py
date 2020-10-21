@@ -28,8 +28,8 @@ def task_3(parser):
     """Construct and output an equivalent DFA.
     The input is guaranteed to be an Epsilon Free NFA."""
     efnfa = parser.parse_nfa()
-    # TODO: implement this
-    print('TODO: print some output')
+    dfa = DFA.NFA_to_DFA(efnfa)
+    print(dfa)
 
 def task_4(parser):
     """For each string, output 1 if the DFA accepts it, 0 otherwise.

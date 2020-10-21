@@ -1,7 +1,8 @@
 """ A module containing finite automata related classes """
 
-from state import State
+from state import State, SuperState
 from delta import Delta
+import string
 
 class FA(object):
     """
@@ -208,7 +209,44 @@ class DFA(FA):
         super().__init__(iterator)
 
     def NFA_to_DFA(nfa):
-        # Given an EFNFA, construct a corresp. DFA
+        dfa = DFA()
+        sigma = list(string.ascii_uppercase)
+        i = 0
+        dfa.alpha = nfa.alpha
+
+        start_state = frozenset([nfa.start])
+
+        q0 = SuperState(sigma[i], start_state)
+        dfa.states.append(q0)
+        dfa.start = q0
+        i+=1
+
+        unprocessed = set([q0])
+        processed = set()
+
+        while (len(unprocessed) > 0):
+            qSuper = unprocessed.pop()
+            processed.add(qSuper)
+            for a in nfa.alpha:
+                reached = []
+                # Find all states reached by letter a from all the states in qSet
+                for q in qSuper.substates:
+                    for delta in q.deltas:
+                        if (delta.symbol == a):
+                            reached.append(delta.end)
+
+                if set(reached) not in [set(sup.substates) for sup in processed]:
+                    qSuper2 = SuperState(sigma[i], reached)
+                    i += 1
+                    unprocessed.add(qSuper2)
+                    dfa.insert_state(qSuper2)
+                    FA.insert_delta(qSuper, a, qSuper2)
 
         return dfa
+
+    def insert_state(self, state):
+        self.states.append(state)
+        if (state.is_final):
+            self.final.add(state)
+
 

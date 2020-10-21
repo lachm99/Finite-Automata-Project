@@ -1,4 +1,4 @@
-class State:
+class State(object):
     """
     State Class
     -----------
@@ -36,3 +36,17 @@ class State:
 
     def set_final(self, is_final):
         self.is_final = is_final
+
+class SuperState(State):
+    """
+    SuperState Class
+    ----------------
+    Actually extends state - but is a state that represents a set of states
+    """
+    def __init__(self, name, states):
+        super().__init__(name)
+        self.substates = states
+        self.is_final = True in [state.is_final for state in states]
+
+    def __hash__(self):
+        return hash(self.name)
