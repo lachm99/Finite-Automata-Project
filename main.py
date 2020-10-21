@@ -13,22 +13,16 @@ def task_1(parser):
     """For each state of the NFA, compute the Epsilon closure and output
     it as a line of the form s:a,b,c where s is the state, and {a,b,c} is E(s)"""
     nfa = parser.parse_nfa()
-    print(nfa)
-    """
     nfa.compute_closures()
     nfa.print_closures()
-    """
 
 def task_2(parser):
     """Construct and output an equivalent Epsilon free NFA.
     The state names should not change."""
     nfa = parser.parse_nfa()
-    closures = parser.parse_closures()
-    nfa.assign_closures(closures)
-
-    efnfa = nfa.gen_efnfa()
-    efnfa.print_fa()
-
+    nfa.assign_closures(parser.parse_closures())
+    nfa.transform_to_efnfa()
+    print(nfa)
 
 def task_3(parser):
     """Construct and output an equivalent DFA.

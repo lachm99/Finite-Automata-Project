@@ -72,7 +72,7 @@ class FA(object):
     OLD METHODS. Might Reimplement.
     ===============================
     def deep_copy(self):
-        copy = FA()
+        copy = FAset()
         copy.states = dict()
         for state in self.states:
             copy.states[state] = (self.states[state][0].copy(),
@@ -108,8 +108,10 @@ class NFA(FA):
         super().__init__(iterator)
 
     def assign_closures(self, closures):
-        for state in closures:
-            self.states[state][1].update(closures[state])
+        for key in closures:
+            state = self.find_state(key)
+            for reached in closures[key]:
+                state.closure.add(self.find_state(reached))
 
     def compute_closures(self):
         for state in self.states:
@@ -122,14 +124,31 @@ class NFA(FA):
         visited.append(state)
         # If we encounter a state with already calculated e_clos,
         # don't recalculate! just union its result
-        if (len(self.states[state][1]) > 0):
-            self.states[origin][1].update(self.states[state][1])
+        if (len(state.closure) > 0):
+            origin.closure.update(state.closure)
             return
-        self.states[origin][1].add(state)
-        for delta in self.states[state][0]:
-            if (delta.string == ""):
+        origin.closure.add(state)
+        for delta in state.deltas:
+            if (delta.symbol == ""):
                 self.recurse_e_closure(origin, visited, delta.end)
 
+    def transform_to_efnfa(self):
+        for origin in self.states:
+            print(list(origin.closure))
+            for state in list(origin.closure):
+                """
+                if (state == origin):
+                    continue
+                """
+                for delta in state.deltas.copy():
+                    if (delta.symbol == ""):
+                        state.remove_delta(delta)
+                    else:
+                        FA.insert_delta(origin, delta.symbol, delta.end)
+
+
+
+    """
     def gen_efnfa(self):
         # Start by duplicating the existing nfa
         efnfa = self.copy_without_deltas()
@@ -162,13 +181,14 @@ class NFA(FA):
                 else:
                     efnfa.states[v1][0].add(t)
         return efnfa
+    """
 
     def print_closures(self):
         output = ""
         for state in self.states:
-            output += state + ":"
-            for val in sorted(self.states[state][1]):
-                output += val + ","
+            output += repr(state) + ":"
+            for val in state.closure:
+                output += repr(val) + ","
             output = output.rstrip(",") + "\n"
         output += "end"
         print(output)

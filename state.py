@@ -11,6 +11,7 @@ class State:
     def __init__(self, name):
         self.name = name
         self.deltas = []
+        self.closure = set([])
 
     def __eq__(self, compare):
         if (isinstance(compare, State)):
@@ -21,6 +22,9 @@ class State:
 
     def __repr__(self):
         return self.name
+
+    def __hash__(self):
+        return hash(repr(self))
 
     def add_delta(self, d):
         self.deltas.append(d)
