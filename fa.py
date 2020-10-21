@@ -31,6 +31,8 @@ class FA(object):
         out += repr(self.start) + "\n"
         out += ",".join([repr(state) for state in self.final]) + "\n"
         for state in self.states:
+            if (state.deltas == []):
+                continue
             out += "\n".join([repr(delta) for delta in state.deltas]) + "\n"
         out += "end"
         return out
@@ -40,6 +42,7 @@ class FA(object):
         self.alpha = next(itr).split(',')
         self.start = self.find_state(next(itr))
         self.final = [self.find_state(name) for name in next(itr).split(',')]
+        [state.setFinal(True) for state in self.final]
         self.generate_deltas(itr)
 
     def generate_deltas(self, itr):
@@ -135,6 +138,8 @@ class NFA(FA):
     def transform_to_efnfa(self):
         for origin in self.states:
             for state in list(origin.closure):
+                if (state.isFinal):
+                    origin.isFinal = True
                 """
                 if (state == origin):
                     continue
@@ -144,7 +149,6 @@ class NFA(FA):
                         state.remove_delta(delta)
                     else:
                         FA.insert_delta(origin, delta.symbol, delta.end)
-
 
 
     """
