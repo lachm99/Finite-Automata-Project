@@ -13,7 +13,7 @@ class State:
         self.name = name
         self.deltas = []
         self.closure = set([])
-        self.isFinal = False
+        self.is_final = False
 
     def __eq__(self, compare):
         if (isinstance(compare, State)):
@@ -34,5 +34,5 @@ class State:
     def remove_delta(self, d):
         self.deltas.remove(d)
 
-    def setFinal(self, isFinal):
-        self.isFinal = isFinal
+    def set_final(self, is_final):
+        self.is_final = is_final
