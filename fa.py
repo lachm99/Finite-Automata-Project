@@ -134,7 +134,6 @@ class NFA(FA):
 
     def transform_to_efnfa(self):
         for origin in self.states:
-            print(list(origin.closure))
             for state in list(origin.closure):
                 """
                 if (state == origin):
