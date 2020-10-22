@@ -19,20 +19,16 @@ def task_2(parser):
     """Construct and output an equivalent Epsilon free NFA.
     The state names should not change."""
     nfa = parser.parse_fa("nfa")
-    closures = parser.parse_closures()
-
-    # TODO: implement this
-    efnfa = nfa
-    print(efnfa)
+    nfa.assign_closures(parser.parse_closures())
+    nfa.transform_to_efnfa()
+    print(nfa)
 
 def task_3(parser):
     """Construct and output an equivalent DFA.
     The input is guaranteed to be an Epsilon Free NFA."""
     efnfa = parser.parse_fa("nfa")
-
     dfa = FA.nfa_to_dfa(efnfa)
     print(dfa)
-    # TODO: implement this
 
 def task_4(parser):
     """For each string, output 1 if the DFA accepts it, 0 otherwise.

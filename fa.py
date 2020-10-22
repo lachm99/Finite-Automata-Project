@@ -64,12 +64,14 @@ class FA(object):
                 target_state[a]
                 deltas_named[new_deltas[s]][a] = new_deltas[deltas[s][a]]
 
-        dfa = DFA([key for key in deltas_named], alpha, start_named, final_named, deltas_named)
-        return dfa
+        states_named = [key for key in deltas_named]
+        return DFA(states_named, alpha, start_named, final_named, deltas_named)
+
 
 class DFA(FA):
     def __init__(self, states, alpha, start, final, deltas):
         super().__init__(states, alpha, start, final, deltas)
+        return
 
     def traverse_string(self, state, instring):
         for a in instring:
@@ -81,6 +83,8 @@ class DFA(FA):
         if (self.traverse_string(self.start, string) in self.final):
             return 1
         return 0
+
+
 
 class NFA(FA):
     def __init__(self, states, alpha, start, final, deltas):
@@ -104,10 +108,22 @@ class NFA(FA):
             states = reached
         return reached
 
-    def generate_efnfa(self):
+    def transform_to_efnfa(self):
+        for origin in self.closures:
+            for state in self.closures[origin]:
+                if state in self.final:
+                    self.final.update(set([origin]))
+                for symbol in self.deltas[state].copy():
+                    if (symbol == ""):
+                        self.deltas[state].pop("")
+                    else:
+                        if (symbol in self.deltas[origin]):
+                            self.deltas[origin][symbol].update(self.deltas[state][symbol])
+                        else:
+                            self.deltas[origin][symbol] = set(self.deltas[state][symbol])
 
-
-        return efnfa
+    def assign_closures(self, closures):
+        self.closures = closures
 
     def compute_closures(self):
         for state in self.states:
@@ -130,27 +146,4 @@ class NFA(FA):
         for state in sorted(self.closures):
             print(state + ":" + ",".join(sorted(self.closures[state])))
         print("end")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
