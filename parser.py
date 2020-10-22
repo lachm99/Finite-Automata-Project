@@ -5,7 +5,7 @@ it, if you'd prefer to write your own parsing functions."""
 import re
 from sys import stdin
 
-from fa import DFA, NFA
+from fa import FA, DFA, NFA
 
 class Parser:
     """Combined parser and reader, takes a stream as input, outputs automata/commands"""
@@ -51,10 +51,10 @@ class Parser:
         final = next(it).split(',')
         # the remaining lines are transitions d(s,c)=t
         deltas = {}
+        for s in states:
+            deltas[s] = {}
         for line in it:
             s, c, t = line.split(',')
-            if not (s in deltas):
-                deltas[s] = {}
             if not (c in deltas[s]):
                 deltas[s][c] = set([])
             deltas[s][c].add(t)

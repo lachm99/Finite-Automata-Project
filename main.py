@@ -6,28 +6,33 @@ wish to."""
 from parser import Parser
 from sys import stdin
 
+from fa import FA
+
 def task_1(parser):
     """For each state of the NFA, compute the Epsilon closure and output
     it as a line of the form s:a,b,c where s is the state, and {a,b,c} is E(s)"""
     nfa = parser.parse_fa("nfa")
-
-    # TODO: implement this
-    print('TODO: print some output')
+    nfa.compute_closures()
+    nfa.print_closures()
 
 def task_2(parser):
     """Construct and output an equivalent Epsilon free NFA.
     The state names should not change."""
     nfa = parser.parse_fa("nfa")
     closures = parser.parse_closures()
+
     # TODO: implement this
-    print('TODO: print some output')
+    efnfa = nfa
+    print(efnfa)
 
 def task_3(parser):
     """Construct and output an equivalent DFA.
     The input is guaranteed to be an Epsilon Free NFA."""
     efnfa = parser.parse_fa("nfa")
+
+    dfa = FA.nfa_to_dfa(efnfa)
+    print(dfa)
     # TODO: implement this
-    print('TODO: print some output')
 
 def task_4(parser):
     """For each string, output 1 if the DFA accepts it, 0 otherwise.
