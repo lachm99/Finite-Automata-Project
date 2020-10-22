@@ -5,6 +5,8 @@ it, if you'd prefer to write your own parsing functions."""
 import re
 from sys import stdin
 
+from fa import DFA, NFA
+
 class Parser:
     """Combined parser and reader, takes a stream as input, outputs automata/commands"""
 
@@ -28,7 +30,7 @@ class Parser:
             line = re.sub('\s', '', line)
         return lines
 
-    def parse_fa(self):
+    def parse_fa(self, type):
         """Read from the stream, return a dictionary representing the nfa/dfa.
 
         key 'state' gives the set of states (as a list)
@@ -42,19 +44,27 @@ class Parser:
         """
         lines = self.read_section()
         it = iter(lines)
-        automata = dict()
-        automata['states'] = next(it).split(',')
-        automata['alphabet'] = next(it).split(',')
-        automata['start'] = next(it)
-        automata['final'] = next(it).split(',')
+
+        states = next(it).split(',')
+        alpha = next(it).split(',')
+        start = next(it)
+        final = next(it).split(',')
         # the remaining lines are transitions d(s,c)=t
-        automata['delta'] = list()
+        deltas = {}
         for line in it:
             s, c, t = line.split(',')
-            # this is a poor choice of data structure to represent delta
-            # you should construct a more useful and efficient representation
-            automata['delta'].append((s, c, t))
-        return automata
+            if not (s in deltas):
+                deltas[s] = {}
+            if not (c in deltas[s]):
+                deltas[s][c] = set([])
+            deltas[s][c].add(t)
+
+        fa = None
+        if (type=="nfa"):
+            fa = NFA(states, alpha, start, final, deltas)
+        if (type == "dfa"):
+            fa = DFA(states, alpha, start, final, deltas)
+        return fa
 
     def parse_closures(self):
         """Read from the stream, return a dictionary where the keys are state
