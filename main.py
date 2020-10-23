@@ -6,7 +6,8 @@ wish to."""
 from parser import Parser
 from sys import stdin
 
-from fa import FA
+# Custom module in fa.py
+from fa import *
 
 def task_1(parser):
     """For each state of the NFA, compute the Epsilon closure and output

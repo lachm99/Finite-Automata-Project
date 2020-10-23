@@ -5,7 +5,8 @@ it, if you'd prefer to write your own parsing functions."""
 import re
 from sys import stdin
 
-from fa import FA, DFA, NFA
+# Custom module.
+from fa import *
 
 class Parser:
     """Combined parser and reader, takes a stream as input, outputs automata/commands"""
@@ -50,6 +51,7 @@ class Parser:
         start = next(it)
         final = next(it).split(',')
         # the remaining lines are transitions d(s,c)=t
+        # The form of this dict. is described in fa.py
         deltas = {}
         for s in states:
             deltas[s] = {}
