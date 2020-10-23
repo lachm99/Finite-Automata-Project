@@ -52,25 +52,25 @@ class FA(object):
         """
         states = set([])
         alpha = nfa.alpha
-        start = nfa.start
+        start = frozenset([nfa.start])
         final = set([])
         deltas = {}
 
         # Init some processing queues
         processed = set([])
         unprocessed = set([])
-        unprocessed.add(frozenset([start]))
+        unprocessed.add(start)
 
         while len(unprocessed) > 0:
             stateSet = unprocessed.pop()
-            processed.add(qSet)
+            processed.add(stateSet)
             # Init a dict of deltas originating from this stateset
             deltas[stateSet] = {}
             # For each symbol in the alphabet, find which set of states can be reached.
             for a in list(alpha):
                 reached = set([])
                 # Add reachable states through a from all states in new stateset
-                [reached.update(nfa.traverse(q,a) for q in stateSet)]
+                [reached.update(nfa.traverse(q,a)) for q in stateSet]
                 reached = frozenset(reached)
                 # Deltas from this stateset across a reaches the set of those states.
                 deltas[stateSet][a] = reached
@@ -94,7 +94,7 @@ class FA(object):
 
         states_named = [new_names[stateSet] for stateSet in new_names]
         start_named = new_names[start]
-        final_named.addall([new_names[state] for state in final])
+        final_named = [new_names[state] for state in final]
         deltas_named = {}
         for s in deltas:
             deltas_named[new_names[s]] = dict.fromkeys([a for a in sorted(alpha)])
